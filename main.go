@@ -35,6 +35,7 @@ func main() {
 
 	userHandler := api.NewUserHandler(db.NewMongoUserStore(client))
 
+	apiv1.Put("/user/:id", userHandler.HandlePutUser)
 	apiv1.Delete("user/:id", userHandler.HandleDeleteUser)
 	apiv1.Post("/user", userHandler.HandlPostUser)
 	apiv1.Get("/user", userHandler.HandleGetUsers)
