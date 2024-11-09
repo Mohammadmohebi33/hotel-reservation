@@ -27,6 +27,7 @@ func main() {
 		Name:     "test",
 		Location: "thran",
 		Rooms:    []primitive.ObjectID{},
+		Rating:   4,
 	}
 
 	insertedHotel, err := hotelStore.Insert(ctx, &hotel)
