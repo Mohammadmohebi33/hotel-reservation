@@ -17,6 +17,7 @@ type UserStore interface {
 	InsertUser(context.Context, *types.User) (*types.User, error)
 	DeleteUser(context.Context, string) error
 	UpdateUser(ctx context.Context, filter bson.M, params types.UpdateUserParams) error
+	GetUserByEmail(context.Context, string) (*types.User, error)
 }
 
 type MongoUserStore struct {
@@ -56,6 +57,15 @@ func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*typ
 	}
 	user.ID = res.InsertedID.(primitive.ObjectID)
 	return user, nil
+}
+
+func (s *MongoUserStore) GetUserByEmail(ctx context.Context, email string) (*types.User, error) {
+	var user types.User
+	if err := s.coll.FindOne(ctx, bson.M{"email": email}).Decode(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 func (s *MongoUserStore) GetUserById(ctx context.Context, id string) (*types.User, error) {

@@ -17,23 +17,25 @@ var (
 	client     *mongo.Client
 	roomStore  db.RoomStore
 	hotelStore db.HotelStore
+	userStore  db.UserStore
 	ctx        = context.Background()
 )
 
-func init() {
-	var err error
-	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(dburi))
+func seedUser(fname, lname, email string) {
+	user, err := types.NewUserFromParams(types.CreateUserParams{
+		FirstName: fname,
+		LastName:  lname,
+		Email:     email,
+		Password:  "password",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	if err := client.Database(db.Dbname).Drop(ctx); err != nil {
+	_, err = userStore.InsertUser(context.TODO(), user)
+	if err != nil {
 		log.Fatal(err)
 	}
-	hotelStore = db.NewMongoHotelStore(client, db.Dbname)
-	roomStore = db.NewMongoRoomStore(client, db.Dbname, hotelStore)
 }
-
 func seedHotel(name, location string, rating int) {
 
 	hotel := types.Hotel{
@@ -83,4 +85,21 @@ func main() {
 	seedHotel("hoteltest2", "rasht", 3)
 	seedHotel("hoteltest3", "tabriz", 2)
 	seedHotel("hoteltest4", "mashad", 1)
+
+	seedUser("mohamamd", "mohebbi", "m@gmail.com")
+}
+
+func init() {
+	var err error
+	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(dburi))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := client.Database(db.Dbname).Drop(ctx); err != nil {
+		log.Fatal(err)
+	}
+	hotelStore = db.NewMongoHotelStore(client, db.Dbname)
+	roomStore = db.NewMongoRoomStore(client, db.Dbname, hotelStore)
+	userStore = db.NewMongoUserStore(client)
 }
