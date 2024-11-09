@@ -13,15 +13,28 @@ import (
 
 const dburi = "mongodb://localhost:27017"
 
-func main() {
-	ctx := context.Background()
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dburi))
+var (
+	client     *mongo.Client
+	roomStore  db.RoomStore
+	hotelStore db.HotelStore
+	ctx        = context.Background()
+)
+
+func init() {
+	var err error
+	client, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(dburi))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	hotelStore := db.NewMongoHotelStore(client, db.Dbname)
-	roomStore := db.NewMongoRoomStore(client, db.Dbname, hotelStore)
+	if err := client.Database(db.Dbname).Drop(ctx); err != nil {
+		log.Fatal(err)
+	}
+	hotelStore = db.NewMongoHotelStore(client, db.Dbname)
+	roomStore = db.NewMongoRoomStore(client, db.Dbname, hotelStore)
+}
+
+func seedHotel(name, location string, rating int) {
 
 	hotel := types.Hotel{
 		Name:     "test",
@@ -30,31 +43,28 @@ func main() {
 		Rating:   4,
 	}
 
-	insertedHotel, err := hotelStore.Insert(ctx, &hotel)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println(insertedHotel)
-
 	rooms := []types.Room{
 		{
-			Type:      types.SingleRoomType,
+			Size:      "small",
 			BasePrice: 120.1,
 		},
 		{
-			Type:      types.DoubleRoomType,
+			Size:      "large",
 			BasePrice: 88,
 		},
 		{
-			Type:      types.DoubleRoomType,
+			Size:      "small",
 			BasePrice: 90,
 		},
 		{
-			Type:      types.SingleRoomType,
+			Size:      "medium",
 			BasePrice: 200,
 		},
+	}
+
+	insertedHotel, err := hotelStore.Insert(ctx, &hotel)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	for _, room := range rooms {
@@ -65,4 +75,12 @@ func main() {
 		}
 		fmt.Println(insertedRoom)
 	}
+
+}
+
+func main() {
+	seedHotel("hoteltest1", "thran", 5)
+	seedHotel("hoteltest2", "rasht", 3)
+	seedHotel("hoteltest3", "tabriz", 2)
+	seedHotel("hoteltest4", "mashad", 1)
 }
