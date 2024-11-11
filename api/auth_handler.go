@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
+	"net/http"
 	"os"
 	"time"
 )
@@ -22,15 +23,27 @@ type AuthResponse struct {
 	Token string      `json:"token"`
 }
 
+type genericResponse struct {
+	Type string `json:"type"`
+	Msg  string `json:"msg"`
+}
+
+type AuthParam struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 func NewAuthHandler(userStore db.UserStore) *AuthHandler {
 	return &AuthHandler{
 		userStore: userStore,
 	}
 }
 
-type AuthParam struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+func invalidCredentialResponse(c *fiber.Ctx) error {
+	return c.Status(http.StatusBadRequest).JSON(genericResponse{
+		Type: "error",
+		Msg:  "invalid credentials",
+	})
 }
 
 func (h *AuthHandler) HandleAuthentication(c *fiber.Ctx) error {
@@ -41,7 +54,7 @@ func (h *AuthHandler) HandleAuthentication(c *fiber.Ctx) error {
 	user, err := h.userStore.GetUserByEmail(c.Context(), AuthParam.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return fmt.Errorf("invalid credentials")
+			return invalidCredentialResponse(c)
 		}
 		return err
 	}
