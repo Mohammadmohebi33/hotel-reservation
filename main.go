@@ -32,20 +32,23 @@ func main() {
 	}
 
 	app := fiber.New(config)
-	auth := app.Group("/api")
-	apiv1 := app.Group("/api/v1", middleware.JWTAuthentication)
 
 	userHandler := api.NewUserHandler(db.NewMongoUserStore(client))
 	hotelStore := db.NewMongoHotelStore(client, "hotel")
 	roomStore := db.NewMongoRoomStore(client, "hotel", hotelStore)
 	userStore := db.NewMongoUserStore(client)
 	authHandler := api.NewAuthHandler(userStore)
-	store := db.Store{
+
+	store := &db.Store{
 		User:  userStore,
 		Hotel: hotelStore,
 		Room:  roomStore,
 	}
 	hotelHandler := api.NewHotelHandler(store)
+	roomHandler := api.NewRoomHandler(store)
+
+	auth := app.Group("/api")
+	apiv1 := app.Group("/api/v1", middleware.JWTAuthentication(userStore))
 
 	//auth
 	auth.Post("/auth", authHandler.HandleAuthentication)
@@ -60,5 +63,8 @@ func main() {
 	apiv1.Get("/hotel", hotelHandler.HandlerGetHotels)
 	apiv1.Get("/hotel/:id", hotelHandler.HandlerGetHotel)
 	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetRooms)
+
+	//booking
+	apiv1.Post("/room/:id/booking", roomHandler.HandleRoomBook)
 	app.Listen(*listenAddr)
 }

@@ -8,10 +8,10 @@ import (
 )
 
 type HotelHandler struct {
-	store db.Store
+	store *db.Store
 }
 
-func NewHotelHandler(store db.Store) *HotelHandler {
+func NewHotelHandler(store *db.Store) *HotelHandler {
 	return &HotelHandler{
 		store: store,
 	}
