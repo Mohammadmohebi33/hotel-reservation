@@ -11,7 +11,7 @@ import (
 type BookingStore interface {
 	InsertBooking(ctx context.Context, booking *types.Booking) (*types.Booking, error)
 	GetBookings(ctx context.Context, m bson.M) ([]*types.Booking, error)
-	GetBookingByID(ctx context.Context, id string) (*types.Booking, error)
+	GetBookingByID(context.Context, string) (*types.Booking, error)
 	UpdateBooking(context.Context, string, bson.M) error
 }
 
