@@ -29,7 +29,7 @@ func JWTAuthentication(userStore db.UserStore) fiber.Handler {
 			return NewError(http.StatusUnauthorized, "token expired")
 		}
 		userID := clams["id"].(string)
-		user, err := userStore.GetUserById(c.Context(), userID)
+		user, err := userStore.GetUserByID(c.Context(), userID)
 		if err != nil {
 			return ErrUnAuthorized()
 		}
