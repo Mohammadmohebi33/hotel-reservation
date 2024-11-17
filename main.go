@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"flag"
-	"github.com/Mohammadmohebi33/hotel-reservation/api/middleware"
 	"github.com/Mohammadmohebi33/hotel-reservation/db"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -53,8 +52,8 @@ func main() {
 	bookHandler := api.NewBookHandler(store)
 
 	auth := app.Group("/api")
-	apiv1 := app.Group("/api/v1", middleware.JWTAuthentication(userStore))
-	admin := apiv1.Group("/admin", middleware.AdminAuth)
+	apiv1 := app.Group("/api/v1", api.JWTAuthentication(userStore))
+	admin := apiv1.Group("/admin", api.AdminAuth)
 
 	//auth
 	auth.Post("/auth", authHandler.HandleAuthentication)
