@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func AddBooking(store db.Store, uid, rid primitive.ObjectID, from, till time.Time) *types.Booking {
+func AddBooking(store *db.Store, uid, rid primitive.ObjectID, from, till time.Time) *types.Booking {
 	booking := &types.Booking{
 		UserID:   uid,
 		RoomID:   rid,

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/Mohammadmohebi33/hotel-reservation/db"
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/bson"
@@ -56,6 +57,10 @@ func (h HotelHandler) HandlerGetHotels(c *fiber.Ctx) error {
 	if err := c.QueryParser(&params); err != nil {
 		return ErrBadRequest()
 	}
+
+	fmt.Println(params.Page)
+	fmt.Println(params.Limit)
+	fmt.Println(params.Rating)
 
 	filter := db.Map{
 		"rating": params.Rating,
