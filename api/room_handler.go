@@ -12,6 +12,16 @@ import (
 	"time"
 )
 
+type RoomHandler struct {
+	store *db.Store
+}
+
+func NewRoomHandler(store *db.Store) *RoomHandler {
+	return &RoomHandler{
+		store: store,
+	}
+}
+
 type BookRoomParams struct {
 	FromDate  time.Time `json:"fromDate"`
 	TillDate  time.Time `json:"tillDate"`
@@ -24,16 +34,6 @@ func (p BookRoomParams) Validate() error {
 		return fmt.Errorf("fromDate is in the past")
 	}
 	return nil
-}
-
-type RoomHandler struct {
-	store *db.Store
-}
-
-func NewRoomHandler(store *db.Store) *RoomHandler {
-	return &RoomHandler{
-		store: store,
-	}
 }
 
 func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
@@ -71,7 +71,6 @@ func (h *RoomHandler) HandleRoomBook(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
 	if !ok {
 		return c.Status(http.StatusInternalServerError).JSON(genericResponse{
 			Type: "error",
@@ -102,11 +101,11 @@ func (h *RoomHandler) isRoomAvailableForBooking(ctx context.Context, roomID prim
 		"till_date": bson.M{"$lte": params.TillDate},
 	}
 
-	booknigs, err := h.store.Booking.GetBookings(ctx, where)
+	bookings, err := h.store.Booking.GetBookings(ctx, where)
 	if err != nil {
 		return false, err
 	}
 
-	ok := len(booknigs) == 0
+	ok := len(bookings) == 0
 	return ok, nil
 }

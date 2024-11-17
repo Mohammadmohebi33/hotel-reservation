@@ -21,12 +21,12 @@ func (h HotelHandler) HandleGetRooms(c *fiber.Ctx) error {
 	id := c.Params("id")
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return ErrInvalidID()
 	}
 	filter := bson.M{"hotelId": oid}
 	rooms, err := h.store.Room.GetRooms(c.Context(), filter)
 	if err != nil {
-		return err
+		return ErrNotResourceNotFound("hotel")
 	}
 	return c.JSON(rooms)
 }
@@ -41,14 +41,9 @@ func (h HotelHandler) HandlerGetHotels(c *fiber.Ctx) error {
 
 func (h HotelHandler) HandlerGetHotel(c *fiber.Ctx) error {
 	id := c.Params("id")
-	oid, err := primitive.ObjectIDFromHex(id)
+	hotel, err := h.store.Hotel.GetHotelByID(c.Context(), id)
 	if err != nil {
-		return err
-	}
-
-	hotel, err := h.store.Hotel.GetHotelByID(c.Context(), oid)
-	if err != nil {
-		return err
+		return ErrNotResourceNotFound("hotel")
 	}
 	return c.JSON(hotel)
 }
