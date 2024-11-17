@@ -42,6 +42,13 @@ func ErrInvalidID() Error {
 	}
 }
 
+func ErrNotResourceNotFound(res string) Error {
+	return Error{
+		Code: http.StatusNotFound,
+		Err:  res + " resource not found",
+	}
+}
+
 func ErrorHandler(c *fiber.Ctx, err error) error {
 	if apiError, ok := err.(Error); ok {
 		return c.Status(apiError.Code).JSON(apiError)

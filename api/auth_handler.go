@@ -18,6 +18,17 @@ type AuthHandler struct {
 	userStore db.UserStore
 }
 
+func NewAuthHandler(userStore db.UserStore) *AuthHandler {
+	return &AuthHandler{
+		userStore: userStore,
+	}
+}
+
+type AuthParam struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type AuthResponse struct {
 	User  *types.User `json:"user"`
 	Token string      `json:"token"`
@@ -26,17 +37,6 @@ type AuthResponse struct {
 type genericResponse struct {
 	Type string `json:"type"`
 	Msg  string `json:"msg"`
-}
-
-type AuthParam struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-func NewAuthHandler(userStore db.UserStore) *AuthHandler {
-	return &AuthHandler{
-		userStore: userStore,
-	}
 }
 
 func invalidCredentialResponse(c *fiber.Ctx) error {
@@ -61,7 +61,7 @@ func (h *AuthHandler) HandleAuthentication(c *fiber.Ctx) error {
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.EncryptedPassword), []byte(AuthParam.Password))
 	if err != nil {
-		return fmt.Errorf("invalid credentials")
+		return invalidCredentialResponse(c)
 	}
 
 	resp := AuthResponse{
@@ -81,11 +81,11 @@ func CreateTokenFromUser(user *types.User) string {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	scret := os.Getenv("JWT_SECRET")
+	secret := os.Getenv("JWT_SECRET")
 
-	tokenSrt, err := token.SignedString([]byte(scret))
+	tokenSrt, err := token.SignedString([]byte(secret))
 	if err != nil {
-		fmt.Println("failed to sign token")
+		fmt.Println("failed to sign token with secret", err)
 	}
 	return tokenSrt
 }
